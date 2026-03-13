@@ -23,7 +23,7 @@ class StoreWalletRequest extends FormRequest
     {
         return [
             'balance'=>'required|numeric',
-            'devise'=>'required|string',
+            'currency'=>'required|string',
          ];
     }
 }

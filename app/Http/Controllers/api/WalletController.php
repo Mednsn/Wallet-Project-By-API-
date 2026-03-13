@@ -17,7 +17,8 @@ class WalletController extends Controller
      */
     public function index()
     {
-        $wallet = WalletResource::collection(Wallet::with('transactions')->with('user')->where('user_id',Auth::id())->get());
+        // dd("arriver icci");
+        $wallet = WalletResource::collection(Wallet::with('transactions','users')->where('user_id',Auth::id())->get());
         return response()->json([
           'status'=>'success',
           'data'=>$wallet
@@ -35,6 +36,7 @@ class WalletController extends Controller
         $validated['user_id'] = Auth::id();
         $wallet = Wallet::create($validated);
         $wallet->load('transactions');
+        // dd("arriver iici");
         return response()->json([
         'status' => 'success',
         'message' => 'wallet créé avec succès',

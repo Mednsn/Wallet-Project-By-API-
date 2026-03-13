@@ -32,6 +32,8 @@ class TransactionController extends Controller
 
     public function deposit(StoreTransactionRequest $request)
     {
+        dd("arrived deposit transaction");
+
      $validated = $request->validated();
 
      $wallet = Wallet::where('id',$validated['wallet_id'])->first();
@@ -48,7 +50,9 @@ class TransactionController extends Controller
     }
 
     
-    public function withdraw(StoreTransactionRequest $request){
+    public function withdraw(StoreTransactionRequest $request)
+    {
+        dd("arrived withdraw transaction");
 
      $validated = $request->validated();
 
@@ -67,12 +71,15 @@ class TransactionController extends Controller
       $transaction->load('wallet');
         return response()->json([
         'status' => 'success',
-        'message' => 'Transaction créé avec succès',
+        'message' => 'transaction est cree avec success',
         'data' => $transaction
         ], 201);
     }
 
-    public function transfer(StoreTransactionRequest $request){
+    public function transfer(StoreTransactionRequest $request)
+    {
+        dd("arrived transfer");
+        
 
      $validated = $request->validated();
 
@@ -94,7 +101,7 @@ class TransactionController extends Controller
       $transaction->load(['wallet','toWallet']);
         return response()->json([
         'status' => 'success',
-        'message' => 'argent est transfer avec success',
+        'message' => ' vous avez transformer l\'argent avec success',
         'data' => $transaction
         ], 201);
     }
