@@ -48,7 +48,7 @@ class AuthController extends Controller
 
             $token = $request->user()->createToken('token_api')->plainTextToken;
             return response()->json([
-                'status' => 'vous avez login right now success',
+                'status' => 'you are login right now success',
                 'user' => Auth::user(),
                 'token' => $token
             ], 200);
@@ -65,6 +65,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // dd("arrived");
         // $user_id = $request->user()->id;
         $request->user()->tokens()->delete();
 
