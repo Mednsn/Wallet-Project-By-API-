@@ -81,29 +81,29 @@ class TransactionController extends Controller
         dd("arrived transfer");
         
 
-     $validated = $request->validated();
+    //  $validated = $request->validated();
 
-      $wallet1 = Wallet::where('id',$validated['wallet_id'])->first();
-     $wallet2 = Wallet::where('id',$validated['to_wallet_id'])->first();
-     if($wallet1->balance < $validated['amount']){
-        return response()->json([
-        'status' => 'errur',
-        'message' => 'balance de wallet est insifisont'
-        ],422);
-     }
+    //   $wallet1 = Wallet::where('id',$validated['wallet_id'])->first();
+    //  $wallet2 = Wallet::where('id',$validated['to_wallet_id'])->first();
+    //  if($wallet1->balance < $validated['amount']){
+    //     return response()->json([
+    //     'status' => 'errur',
+    //     'message' => 'balance de wallet est insifisont'
+    //     ],422);
+    //  }
      
-     $balance1 = $wallet1->balance - $validated['amount'];
-     $balance2 = $wallet2->balance + $validated['amount'];
-     $wallet1->update(['balance'=>$balance1 ]);
-     $wallet2->update(['balance'=>$balance2 ]);
+    //  $balance1 = $wallet1->balance - $validated['amount'];
+    //  $balance2 = $wallet2->balance + $validated['amount'];
+    //  $wallet1->update(['balance'=>$balance1 ]);
+    //  $wallet2->update(['balance'=>$balance2 ]);
 
-      $transaction = Transaction::create($validated);
-      $transaction->load(['wallet','toWallet']);
-        return response()->json([
-        'status' => 'success',
-        'message' => ' vous avez transformer l\'argent avec success',
-        'data' => $transaction
-        ], 201);
+    //   $transaction = Transaction::create($validated);
+    //   $transaction->load(['wallet','toWallet']);
+    //     return response()->json([
+    //     'status' => 'success',
+    //     'message' => ' vous avez transformer l\'argent avec success',
+    //     'data' => $transaction
+    //     ], 201);
     }
 
     
