@@ -19,6 +19,7 @@ class WalletController extends Controller
     {
         // dd("arriver icci");
         $wallet = WalletResource::collection(Wallet::with('transactions','users')->where('user_id',Auth::id())->get());
+        // dd($wallet);
         return response()->json([
           'status'=>'success',
           'data'=>$wallet
