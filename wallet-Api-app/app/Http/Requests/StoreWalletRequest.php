@@ -22,6 +22,7 @@ class StoreWalletRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name'=>'required | string',
             'balance'=>'numeric',
             'currency'=>'required|string',
          ];

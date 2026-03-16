@@ -9,6 +9,7 @@ use App\Models\Wallet;
  use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mime\Message;
 
 class WalletController extends Controller
 {
@@ -17,12 +18,12 @@ class WalletController extends Controller
      */
     public function index()
     {
-        // dd("arriver icci");
-        $wallet = WalletResource::collection(Wallet::with('transactions','users')->where('user_id',Auth::id())->get());
+        $wallets = Wallet::with('transactions','users')->where('user_id',Auth::id())->get();
         // dd($wallet);
         return response()->json([
-          'status'=>'success',
-          'data'=>$wallet
+          'success'=>true,
+          'message'=> 'voici la list des wallets.',
+          'data'=>['wallets' => $wallets]
         ],200);
         
     }
@@ -39,9 +40,9 @@ class WalletController extends Controller
         $wallet->load('transactions');
         // dd("arriver iici");
         return response()->json([
-        'status' => 'success',
-        'message' => 'wallet créé avec succès',
-        'data' => $wallet
+        'success' => true,
+        'message' => 'wallet créé avec succes',
+        'data' => ['wallet' => $wallet]
         ], 201);
     }
 

@@ -8,6 +8,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -33,31 +34,48 @@ class AuthController extends Controller
         $user = User::create($validated);
         $token = $user->createToken('token_api')->plainTextToken;
         return response()->json([
-            'status' => 'success',
-            'data' => $user,
-            'token' => $token
+            'success' => true,
+            'message' => 'bienvenue dans notre plateform.',
+            'data' => ['user' => $user, 'token' => $token]
+
         ], 201);
     }
 
     public function login(LoginRequest $request)
     {
 
-        $login = $request->validated();
-
-        if (Auth::attempt($login)) {
-
-            $token = $request->user()->createToken('token_api')->plainTextToken;
+        $user = User::where('email', $request->validated('email'))->first();
+        if (!$user || !Hash::check($request->validated('password'), $user->password)) {
             return response()->json([
-                'status' => 'you are login right now success',
-                'user' => Auth::user(),
-                'token' => $token
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 'errur'
+                "success" => false,
+                "message" => "Identifiants incorrects."
+
             ], 401);
         }
-      
+        $token = $user->createToken($user->name);
+        Auth::login($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'votre avez connecter avec success.',
+            'data' => ['user' => $user, 'token' => $token->plainTextToken]
+        ]);
+        // $login = $request->validated();
+
+        // if (Auth::attempt($login)) {
+
+        //     $token = $request->user()->createToken('token_api')->plainTextToken;
+        //     return response()->json([
+        //         'status' => 'you are login right now success',
+        //         'user' => Auth::user(),
+        //         'token' => $token
+        //     ], 200);
+        // } else {
+        //     return response()->json([
+        //         'status' => 'errur'
+        //     ], 401);
+        // }
+
         // return response()->json([
         //     'message'=>$messges,
         // ],401);

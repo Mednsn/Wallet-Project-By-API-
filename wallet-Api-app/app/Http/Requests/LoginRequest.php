@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
@@ -22,8 +23,25 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'=> 'required|email',
-            'password'=> 'required|string'
+            'email' => 'required|email',
+            'password' => 'required|string'
         ];
+    }
+
+    public function messages()
+    {
+        return [
+            'email.exists' => 'Identifiants incorrects.'
+        ];
+    }
+    public function failedValidation(Validator $validator)
+    {
+
+
+        $error = $validator->errors();
+        return response()->json([
+            "succes" => false,
+            "message" => $error->messages()
+        ]);
     }
 }
