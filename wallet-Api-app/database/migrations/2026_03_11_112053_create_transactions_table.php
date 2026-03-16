@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->float('amount');
-            $table->string('status');
-            $table->string('type')->default('pending');
+            $table->string('type');/*['deposit', 'withdraw', 'transfer_in', 'transfer_out'] */
             $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
-            $table->foreignId('to_wallet_id')->nullable()->constrained('wallets')->nullOnDelete();
+            $table->decimal('balance_after', 15, 2);
+            $table->foreignId('recevoir_wallet_id')->nullable()->constrained('wallets')->nullOnDelete();
+            $table->foreignId('sender_wallet_id')->nullable()->constrained('wallets')->nullOnDelete();
             $table->timestamps();
         });
     }

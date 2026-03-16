@@ -4,12 +4,10 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWalletRequest;
-use App\Http\Resources\WalletResource;
 use App\Models\Wallet;
  use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Mime\Message;
 
 class WalletController extends Controller
 {
@@ -36,6 +34,7 @@ class WalletController extends Controller
         $validated = $request->validated();
 
         $validated['user_id'] = Auth::id();
+        $validated['balance'] = 0;
         $wallet = Wallet::create($validated);
         $wallet->load('transactions');
         // dd("arriver iici");

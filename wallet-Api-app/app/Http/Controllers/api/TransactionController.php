@@ -15,96 +15,140 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(int $id)
     {
-        $transactions = TransactionResource::collection(Transaction::with('wallet')->get());
+        $transactions = Transaction::where('wallet_id', $id)->get();
+
         return response()->json([
-            'status'=>'success',
-            'data'=>$transactions,
-        ],200);
-       
+            "success" => true,
+            "message" => "Historique des transactions récupéré.",
+            'data' => ['transactions' => $transactions]
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-   
 
-    public function deposit(StoreTransactionRequest $request)
+
+    public function deposit(StoreTransactionRequest $request, int $id)
     {
-        dd("arrived deposit transaction");
+        // dd("arrived deposit transaction");
+        if ($request->validated('amount') <= 0) {
+            return response()->json([
+                "success" => false,
+                "message" => "Erreur de validation.",
+                "errors" => [
+                    "amount" => ["Le montant doit être supérieur à 0"]
+                ]
 
-     $validated = $request->validated();
+            ]);
+        }
 
-     $wallet = Wallet::where('id',$validated['wallet_id'])->first();
-     $balance = $wallet->balance + $validated['amount'];
-     $wallet->update(['balance'=>$balance ]);
-
-      $transaction = Transaction::create($validated);
-      $transaction->load('wallet');
+        $wallet = Wallet::find($id);
+        $wallet->balance += $request->validated('amount');
+        $wallet->save();
+        $transaction = Transaction::create([
+            'type'          => 'deposit',
+            'amount'        => $request->validated('amount'),
+            'description'   => $request->validated('description'),
+            'balance_after' => $wallet->balance,
+            'wallet_id' => $wallet->id
+        ]);
         return response()->json([
-        'status' => 'success',
-        'message' => 'Transaction créé avec succès',
-        'data' => $transaction
-        ], 201);
+            'success' => true,
+            'message' => 'Dépôt effectué avec succès.',
+            'data'    => ['transaction' => $transaction, 'wallet' => $wallet]
+        ]);
     }
 
-    
-    public function withdraw(StoreTransactionRequest $request)
+
+    public function withdraw(StoreTransactionRequest $request, int $id): JsonResponse
     {
-        dd("arrived withdraw transaction");
+        // dd("arrived widhraw");
+        $wallet = Wallet::find($id);
 
-     $validated = $request->validated();
+        if ($request->validated('amount') > $wallet->balance) {
+            return response()->json([
+                "success" => false,
+                "message" => "essayer un autre montant s'il vous plait."
+            ]);
+        }
 
-     $wallet = Wallet::where('id',$validated['wallet_id'])->first();
-     if($wallet->balance < $validated['amount']){
+        $wallet->balance -= $request->validated('amount');
+        $wallet->save();
+
+        $transaction = Transaction::create([
+            'type'          => 'withdraw',
+            'amount'        => $request->validated('amount'),
+            'description'   => $request->validated('description'),
+            'balance_after' => $wallet->balance,
+            'wallet_id' => $wallet->id
+        ]);
+
         return response()->json([
-        'status' => 'errur',
-        'message' => 'balance de wallet est insifisont'
-        ],422);
-     }
-     
-     $balance = $wallet->balance - $validated['amount'];
-     $wallet->update(['balance'=>$balance ]);
+            "success" => true,
+            "message" => "vous avez reterer avec success.",
+            'data' => ['transaction' => $transaction, 'wallet' => $wallet]
 
-      $transaction = Transaction::create($validated);
-      $transaction->load('wallet');
-        return response()->json([
-        'status' => 'success',
-        'message' => 'transaction est cree avec success',
-        'data' => $transaction
-        ], 201);
+        ]);
     }
 
-    public function transfer(StoreTransactionRequest $request)
+    public function transfer(StoreTransactionRequest $request, int $id)
     {
-        dd("arrived transfer");
-        
+        // dd("arrived transfer");
+        $wallet = Wallet::find($id);
+        $recevoir = Wallet::find($request->validated('recevoir_wallet_id'));
 
-    //  $validated = $request->validated();
+        if ($wallet->currency !== $recevoir->currency) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transfert impossible : les deux wallets doivent avoir la même devise.'
+            ], 400);
+        }
 
-    //   $wallet1 = Wallet::where('id',$validated['wallet_id'])->first();
-    //  $wallet2 = Wallet::where('id',$validated['to_wallet_id'])->first();
-    //  if($wallet1->balance < $validated['amount']){
-    //     return response()->json([
-    //     'status' => 'errur',
-    //     'message' => 'balance de wallet est insifisont'
-    //     ],422);
-    //  }
-     
-    //  $balance1 = $wallet1->balance - $validated['amount'];
-    //  $balance2 = $wallet2->balance + $validated['amount'];
-    //  $wallet1->update(['balance'=>$balance1 ]);
-    //  $wallet2->update(['balance'=>$balance2 ]);
+        if ($wallet->balance < $request->amount) {
+            return response()->json([
+                'success' => false,
+                'message' => "Solde insuffisant. Solde actuel : {$wallet->balance} {$wallet->currency}."
+            ], 400);
+        }
 
-    //   $transaction = Transaction::create($validated);
-    //   $transaction->load(['wallet','toWallet']);
-    //     return response()->json([
-    //     'status' => 'success',
-    //     'message' => ' vous avez transformer l\'argent avec success',
-    //     'data' => $transaction
-    //     ], 201);
+        $wallet->balance -= $request->validated('amount');
+        $wallet->save();
+
+        $recevoir->balance += $request->validated('amount');
+        $recevoir->save();
+
+        $transaction_out = Transaction::create([
+            'wallet_id' => $wallet->id,
+            'type' => 'transfer_out',
+            'amount' => $request->validated('amount'),
+            'description' => $request->validated('description'),
+            'recevoir_wallet_id' => $recevoir->id,
+            'balance_after' => $wallet->balance
+        ]);
+
+
+        $transaction_in = Transaction::create([
+            'wallet_id' => $recevoir->id,
+            'type' => 'transfer_in',
+            'amount' => $request->validated('amount'),
+            'description' => $request->validated('description'),
+            'sender_wallet_id' => $wallet->id,
+            'balance_after' => $recevoir->balance
+        ]);
+
+
+        return response()->json([
+            "success" => true,
+            "message" => "Transfert effectué avec succès.",
+            'data' => [
+                'transaction_out' => $transaction_out,
+                'transaction_in' => $transaction_in,
+                'wallet' => $wallet
+            ]
+
+        ]);
     }
-
-    
 }

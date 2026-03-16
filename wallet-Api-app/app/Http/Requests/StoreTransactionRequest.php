@@ -22,10 +22,10 @@ class StoreTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'wallet_id'=>'required|exists:wallets,id',
-            'type'=>'required|string',
+
             'amount'=>'required',
-            'to_wallet_id'=>'nullable|exists:wallets,id',
+            'recevoir_wallet_id' => 'nullable | integer',
+            'description'=>'nullable|string',
          ];
     }
 }

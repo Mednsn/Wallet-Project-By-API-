@@ -60,25 +60,7 @@ class AuthController extends Controller
             'message' => 'votre avez connecter avec success.',
             'data' => ['user' => $user, 'token' => $token->plainTextToken]
         ]);
-        // $login = $request->validated();
-
-        // if (Auth::attempt($login)) {
-
-        //     $token = $request->user()->createToken('token_api')->plainTextToken;
-        //     return response()->json([
-        //         'status' => 'you are login right now success',
-        //         'user' => Auth::user(),
-        //         'token' => $token
-        //     ], 200);
-        // } else {
-        //     return response()->json([
-        //         'status' => 'errur'
-        //     ], 401);
-        // }
-
-        // return response()->json([
-        //     'message'=>$messges,
-        // ],401);
+       
     }
 
     public function logout(Request $request)
@@ -87,9 +69,9 @@ class AuthController extends Controller
         // $user_id = $request->user()->id;
         $request->user()->tokens()->delete();
 
+        // 'user_id'=> $user_id,
         return response()->json([
-            // 'user_id'=> $user_id,
-            'status' => 'success',
+            'success' => true,
             'message' => 'you are logout now '
         ], 200);
     }
